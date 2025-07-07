@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: immigration-tracker-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: immigration_tracker
+      POSTGRES_USER: immigrationuser
+      POSTGRES_PASSWORD: dev_password_123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schemas:/docker-entrypoint-initdb.d
+    networks:
+      - immigration-tracker-network
+
+  # Redis for Caching
+  redis:
+    image: redis:7-alpine
+    container_name: immigration-tracker-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - immigration-tracker-network
+
+  # pgAdmin for Database Management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: immigration-tracker-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@immigrationtracker.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - immigration-tracker-network
+
+  # Spring Boot Backend (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: immigration-tracker-backend
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=immigration_tracker
+      - DB_USERNAME=immigrationuser
+      - DB_PASSWORD=dev_password_123
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=dev_jwt_secret_key_change_in_production
+      - FILE_STORAGE_PATH=/app/uploads
+    ports:
+      - "8080:8080"
+      - "8000:8000"  # Debug port
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/uploads:/app/uploads
+      - maven_cache:/root/.m2
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - immigration-tracker-network
+
+  # React Web Application (Development)
+  web:
+    build:
+      context: ./frontend/web
+      dockerfile: Dockerfile.dev
+    container_name: immigration-tracker-web
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080/api
+      - REACT_APP_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/web/src:/app/src
+      - ./frontend/web/public:/app/public
+      - ./frontend/shared:/app/shared
+      - web_node_modules:/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - immigration-tracker-network
+
+  # MailHog for Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: immigration-tracker-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    networks:
+      - immigration-tracker-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  maven_cache:
+    driver: local
+  web_node_modules:
+    driver: local
+
+networks:
+  immigration-tracker-network:
+    driver: bridge 

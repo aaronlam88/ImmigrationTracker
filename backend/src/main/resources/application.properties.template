@@ -1,0 +1,183 @@
+# Immigration Tracker - Spring Boot Configuration Template
+# Copy this file to application.properties and update with your local settings
+
+# ===============================
+# Server Configuration
+# ===============================
+server.port=8080
+server.servlet.context-path=/api
+
+# ===============================
+# Database Configuration
+# ===============================
+spring.datasource.url=jdbc:postgresql://localhost:5432/immigration_tracker
+spring.datasource.username=immigrationuser
+spring.datasource.password=dev_password_123
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA/Hibernate Configuration
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
+# ===============================
+# Security Configuration
+# ===============================
+# JWT Configuration
+jwt.secret=your_jwt_secret_key_change_this_in_production
+jwt.expiration=86400
+jwt.refresh.expiration=604800
+
+# Password Encoding
+security.password.strength=12
+
+# ===============================
+# File Upload Configuration
+# ===============================
+# File Storage
+file.storage.path=./uploads
+file.storage.max-file-size=10MB
+file.storage.max-request-size=50MB
+
+# Spring Boot File Upload
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=50MB
+spring.servlet.multipart.enabled=true
+
+# ===============================
+# Email Configuration
+# ===============================
+# SMTP Configuration (for development, use MailHog)
+spring.mail.host=localhost
+spring.mail.port=1025
+spring.mail.username=
+spring.mail.password=
+spring.mail.properties.mail.smtp.auth=false
+spring.mail.properties.mail.smtp.starttls.enable=false
+
+# Email Templates
+email.from.address=noreply@immigrationtracker.com
+email.from.name=Immigration Tracker
+
+# ===============================
+# Redis Configuration (Optional)
+# ===============================
+spring.redis.host=localhost
+spring.redis.port=6379
+spring.redis.password=
+spring.redis.timeout=2000ms
+
+# ===============================
+# Logging Configuration
+# ===============================
+logging.level.com.immigrationtracker=DEBUG
+logging.level.org.springframework.security=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+
+# Log file configuration
+logging.file.name=logs/immigration-tracker.log
+logging.file.max-size=10MB
+logging.file.max-history=30
+
+# ===============================
+# Application Configuration
+# ===============================
+# Application Information
+app.name=Immigration Tracker
+app.version=1.0.0
+app.description=Immigration Process Management System
+
+# Frontend URLs (for CORS and email links)
+app.frontend.web.url=http://localhost:3000
+app.frontend.mobile.url=http://localhost:19006
+
+# ===============================
+# Actuator Configuration
+# ===============================
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.show-details=when-authorized
+management.info.env.enabled=true
+
+# ===============================
+# Notification Configuration
+# ===============================
+# Notification Settings
+notification.email.enabled=true
+notification.sms.enabled=false
+notification.push.enabled=false
+
+# Deadline Notification Times (in days before deadline)
+notification.deadline.reminder.days=7,3,1
+notification.deadline.critical.days=1
+
+# ===============================
+# Immigration Process Configuration
+# ===============================
+# OPT Configuration
+immigration.opt.application.deadline.days=90
+immigration.opt.ead.processing.days=90
+immigration.opt.grace.period.days=60
+
+# H1B Configuration
+immigration.h1b.registration.start.date=2024-03-01
+immigration.h1b.registration.end.date=2024-03-31
+immigration.h1b.petition.deadline.days=90
+
+# ===============================
+# External API Configuration
+# ===============================
+# USCIS Case Status API (if available)
+uscis.api.enabled=false
+uscis.api.url=https://egov.uscis.gov/casestatus/mycasestatus.do
+
+# ===============================
+# Development Profile Specific
+# ===============================
+# Enable/disable features for development
+feature.document.ocr.enabled=false
+feature.deadline.prediction.enabled=false
+feature.employer.matching.enabled=false
+
+# ===============================
+# Production Overrides
+# ===============================
+# These should be overridden in production environment
+---
+spring.config.activate.on-profile=production
+
+# Production Database (use environment variables)
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/immigration_tracker}
+spring.datasource.username=${DB_USERNAME:immigrationuser}
+spring.datasource.password=${DB_PASSWORD}
+
+# Production Security
+jwt.secret=${JWT_SECRET}
+jwt.expiration=${JWT_EXPIRATION:86400}
+
+# Production File Storage
+file.storage.path=${FILE_STORAGE_PATH:/app/uploads}
+
+# Production Email
+spring.mail.host=${EMAIL_HOST:smtp.gmail.com}
+spring.mail.port=${EMAIL_PORT:587}
+spring.mail.username=${EMAIL_USERNAME}
+spring.mail.password=${EMAIL_PASSWORD}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+
+# Production Redis
+spring.redis.host=${REDIS_HOST:localhost}
+spring.redis.port=${REDIS_PORT:6379}
+spring.redis.password=${REDIS_PASSWORD:}
+
+# Production Logging
+logging.level.com.immigrationtracker=INFO
+logging.level.org.springframework.security=WARN
+logging.level.org.hibernate.SQL=WARN
+
+# Production Frontend URLs
+app.frontend.web.url=${FRONTEND_WEB_URL:https://immigrationtracker.com}
+app.frontend.mobile.url=${FRONTEND_MOBILE_URL:https://app.immigrationtracker.com} 
