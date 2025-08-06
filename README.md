@@ -44,7 +44,7 @@ A comprehensive web and mobile application to help international students naviga
 1. **Clone and start backend**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/aaronlam88/ImmigrationTracker.git
    cd ImmigrationTracker/backend
    ./gradlew bootRun
    ```
