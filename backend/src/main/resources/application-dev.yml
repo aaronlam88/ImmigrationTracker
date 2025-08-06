@@ -1,0 +1,57 @@
+# Development Profile Configuration
+# Uses SQLite for fast development and testing
+
+spring:
+  datasource:
+    url: jdbc:sqlite:./dev-database.db
+    driver-class-name: org.sqlite.JDBC
+    username: ""
+    password: ""
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.community.dialect.SQLiteDialect
+        jdbc:
+          time_zone: UTC
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+  
+  # Email Configuration (MailHog for development)
+  mail:
+    host: localhost
+    port: 1025
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  # Flyway Configuration for SQLite
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration/common
+
+# Development Logging
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.immigrationtracker: DEBUG
+
+# Development Features
+feature:
+  document:
+    ocr:
+      enabled: true
+  deadline:
+    prediction:
+      enabled: true
+  employer:
+    matching:
+      enabled: true

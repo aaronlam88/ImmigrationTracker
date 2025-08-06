@@ -1,0 +1,72 @@
+# Production Profile Configuration  
+# Uses PostgreSQL for production deployment
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/immigration_tracker}
+    username: ${DB_USERNAME:immigrationuser}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  
+  # Production Email Configuration
+  mail:
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  # Flyway Configuration for PostgreSQL
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    locations: classpath:db/migration/common
+
+# Production Security
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400}
+
+# Production File Storage
+file:
+  storage:
+    path: ${FILE_STORAGE_PATH:/app/uploads}
+
+# Production URLs
+app:
+  frontend:
+    web:
+      url: ${FRONTEND_WEB_URL:https://immigrationtracker.com}
+    mobile:
+      url: ${FRONTEND_MOBILE_URL:https://app.immigrationtracker.com}
+
+# Production Logging (less verbose)
+logging:
+  level:
+    com.immigrationtracker: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+# Production Redis (if using)
+spring:
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
