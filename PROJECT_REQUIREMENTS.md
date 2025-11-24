@@ -1,176 +1,137 @@
 # Immigration Tracker - Project Requirements
 
-<!-- markdownlint-disable MD036 -->
-
-## 📋 Executive Summary
-
-A comprehensive web and mobile application to help international students navigate immigration processes, track critical deadlines, and maintain compliance for OPT, H1B, and other visa categories.
-
-### Key Problems Solved
-
-- **Deadline Management**: Automated tracking of critical immigration deadlines
-- **Document Organization**: Secure storage and management of sensitive immigration documents
-- **Process Guidance**: Step-by-step guidance through complex immigration processes
-- **Compliance Monitoring**: Real-time monitoring of visa status and compliance requirements
-
-### Target Users
-
-International students (F-1 visa holders) pursuing OPT, STEM OPT extensions, and H1B visa transitions.
+**Target Users**: International students (F-1 visa holders) navigating OPT, STEM OPT, and H1B processes  
+**Core Problem**: Complex immigration deadlines, document management, and compliance tracking  
+**Solution**: Mobile-first offline app → Cloud-enabled platform
 
 ---
 
-## 🎯 User Personas
+## 🎯 User Personas & Journey
 
 ### Primary Persona: Sarah - STEM Graduate
 
-- **Demographics**: 24, MS Computer Science, India
-- **Status**: Recent graduate applying for OPT
-- **Goals**: Secure software engineering job, prepare for H1B
-- **Pain Points**: Confused about timeline, nervous about job search timing
-- **Timeline**: 36-month journey (OPT → STEM OPT → H1B)
+- **Demographics**: 24, MS Computer Science, International student
+- **Current Status**: Recent graduate applying for OPT
+- **Goals**: Secure job, navigate OPT → H1B transition successfully
+- **Pain Points**: Confused timelines, missed deadlines, document chaos
 
-### User Journey Overview
+### Immigration Journey
 
-1. **Graduate** → Apply for OPT → Receive EAD Card
-2. **Job Search** → Receive Offers → Coordinate Start Date
-3. **Employment Setup** → Apply for SSN → Begin Work
-4. **Status Maintenance** → STEM Extension (if eligible) → H1B Application
-5. **Long-term Planning** → H1B Approval → Status Change
+```
+F-1 Student → Graduate → OPT Application → EAD Card → Employment → H1B Registration → H1B Approval
+```
+
+**Critical Periods**:
+
+- 90 days before graduation (OPT application)
+- 60-day grace period after program end
+- H1B registration season (March)
+- Employment start date coordination
 
 ---
 
 ## ⚡ Core Features
 
-### MVP Features (Must-Have)
-
-#### **User Management**
-
-- Email/password authentication with email verification
-- Profile management (personal info, education, immigration status)
-- Multi-factor authentication support
+### Phase 1: MVP Mobile Features (Offline-First)
 
 #### **Immigration Status Tracking**
 
-- F-1 Status tracking (SEVIS ID, program dates)
-- OPT tracking (application status, employment authorization period)
-- H1B process tracking (registration, lottery, petition status)
-
-#### **Document Management**
-
-- Secure document upload with encryption
-- Smart categorization by document type
-- Version control and expiration tracking
-- Secure sharing capabilities
+- F-1 status monitoring (SEVIS ID, program dates)
+- OPT application progress and timeline
+- H1B process tracking (registration, lottery, petition)
+- Status change notifications and guidance
 
 #### **Deadline Management**
 
-- Critical deadline tracking (OPT applications, address changes, employment reporting)
-- Multi-channel notifications (email, SMS, push)
-- Escalation system with increasing urgency
-- Compliance monitoring
+- Critical deadline tracking with local notifications
+- 90-day OPT application reminder
+- Address change requirements (10-day rule)
+- Employment reporting deadlines
+- Document expiration alerts
+
+#### **Document Management**
+
+- Secure local document storage and organization
+- Smart categorization (Passport, Visa, I-20, EAD, etc.)
+- Document expiration tracking
+- Photo capture and basic editing
 
 #### **Employment Coordination**
 
 - Job search tracking (applications, interviews, offers)
 - Start date coordination with EAD timeline
-- Employer communication templates
-- SSN application tracking
+- Employer information management
+- Work authorization verification
+
+### Phase 3: Cloud-Enhanced Features
+
+#### **Multi-Device Sync**
+
+- Secure cloud data synchronization
+- Cross-device access and updates
+- Backup and restore capabilities
+
+#### **Advanced Notifications**
+
+- Email and SMS alerts
+- Escalation system for critical deadlines
+- Personalized guidance and tips
+
+#### **Collaboration Features**
+
+- Advisor/attorney access (with permission)
+- Document sharing capabilities
+- Progress sharing with family/friends
 
 ---
 
 ## 🛠️ Technical Architecture
 
-### Frontend Stack
+### Phase 1: Mobile-First Offline Stack
 
-- **Mobile**: React Native with Expo SDK
-- **Web**: React with modern tooling
-- **Shared**: TypeScript monorepo structure
-- **UI**: React Native Elements (mobile), Tailwind CSS (web)
-- **State Management**: React Hooks
+- **Platform**: React Native CLI (iOS first, Android Phase 2)
+- **Language**: TypeScript with strict mode
+- **Database**: Local SQLite with react-native-sqlite-storage
+- **Navigation**: React Navigation 6+
+- **State**: React Hooks with offline-first patterns
+- **Storage**: Local file system for documents
+- **Notifications**: Local push notifications
 
-### Backend Stack
+### Phase 3: Backend Integration Stack
 
-- **Framework**: Spring Boot 3.x with Java 17+
-- **Database**: SQLite (dev) / PostgreSQL (prod) with JPA/Hibernate
-- **Security**: Spring Security with JWT authentication
-- **Build**: Gradle with profile-based configuration
-- **File Storage**: Local filesystem (MVP), S3 (future)
+- **API**: Spring Boot 3.x + Java 17+
+- **Database**: PostgreSQL (prod) / SQLite (dev)
+- **Authentication**: JWT with offline capability
+- **File Storage**: AWS S3 or local filesystem
 - **Email**: JavaMailSender for notifications
+- **Migration**: RESTful → GraphQL planned
 
-### Database Design
+### Database Schema (Core Entities)
 
 ```sql
--- Core entities
+-- User and authentication
 users (id, email, password_hash, first_name, last_name, created_at)
+user_roles (user_id, role_id)
+
+-- Immigration tracking  
 immigration_statuses (id, user_id, status_type_id, start_date, end_date, is_current)
+immigration_status_types (id, name, description, typical_duration_days)
+
+-- Document management
 documents (id, user_id, category_id, name, file_path, upload_date, expiry_date)
+document_categories (id, name, description, is_required)
+
+-- Deadline tracking
 deadlines (id, user_id, deadline_type_id, title, deadline_date, is_completed)
+deadline_types (id, name, description, default_reminder_days, is_critical)
+
+-- Employment tracking
 employments (id, user_id, company_id, position_title, start_date, work_authorization)
+companies (id, name, address, is_h1b_sponsor)
+
+-- Notifications
 notifications (id, user_id, type, title, message, is_read, created_at)
 ```
-
-### Security Implementation
-
-- **Authentication**: JWT tokens with refresh mechanism
-- **File Encryption**: AES-256 for sensitive documents
-- **Password Security**: BCrypt hashing with salt
-- **Access Control**: User-based authorization for all resources
-
----
-
-## 🗓️ Implementation Roadmap
-
-### Phase 1: MVP Foundation (Months 1-3)
-
-**Goal**: Core functionality for single-user deployment
-
-**Deliverables**:
-
-- ✅ User registration and authentication
-- ✅ Database setup (SQLite/PostgreSQL dual support)
-- ✅ Basic project structure and configuration
-- 🔄 Document upload and storage
-- 📅 Critical deadline tracking
-- 📧 Email notification system
-- 📱 Basic mobile and web interfaces
-
-### Phase 2: Enhanced Features (Months 4-6)
-
-**Goal**: Improved user experience and reliability
-
-**Deliverables**:
-
-- Advanced notification system (SMS, push)
-- Enhanced document management
-- Immigration status workflow
-- Employment tracking features
-- Mobile app optimization
-- Basic analytics and reporting
-
-### Phase 3: Production Deployment (Months 7-9)
-
-**Goal**: Scalable, secure cloud platform
-
-**Deliverables**:
-
-- AWS deployment with Docker
-- Enhanced security and encryption
-- Performance optimization
-- Monitoring and alerting
-- User feedback integration
-- Beta testing program
-
-### Phase 4: Advanced Features (Months 10-12)
-
-**Goal**: AI-powered features and community
-
-**Deliverables**:
-
-- Predictive deadline analytics
-- Employer matching features
-- Community and collaboration tools
-- API for third-party integrations
-- Multi-language support
 
 ---
 
@@ -178,49 +139,49 @@ notifications (id, user_id, type, title, message, is_read, created_at)
 
 ### Data Protection
 
-- **Encryption**: AES-256 for sensitive data at rest
-- **Transmission**: TLS 1.3 for data in transit
-- **Access**: Role-based access control (RBAC)
-- **Audit**: Comprehensive access and change logs
+- **Local Encryption**: AES-256 for sensitive documents on device
+- **Transmission**: TLS 1.3 for all network communication (Phase 3+)
+- **Access Control**: User-based authorization, no cross-user data access
+- **Audit Logging**: Track all data access and modifications
 
 ### Privacy Compliance
 
-- **GDPR**: Right to access, rectification, erasure, portability
-- **CCPA**: Right to know, delete, opt-out
+- **GDPR/CCPA**: Right to access, rectification, erasure, portability
 - **Data Minimization**: Collect only necessary information
-- **Retention**: Configurable data retention policies
+- **Retention Policies**: Configurable data retention periods
+- **Consent Management**: Clear opt-in/opt-out for data collection
 
-### Government Integration Compliance
+### Immigration Law Compliance
 
 - **No Automated Scraping**: Manual data entry only
-- **Official Sources**: Use only publicly available information
-- **Reference Only**: No direct integration with restricted systems
-- **Disclaimers**: Clear legal disclaimers about information accuracy
+- **Official Sources**: Reference publicly available information only
+- **Legal Disclaimers**: Clear disclaimers about information accuracy
+- **No Legal Advice**: Tool provides information, not legal counsel
 
 ---
 
 ## 📊 Success Metrics
 
-### User Engagement
+### User Engagement (Phase 1)
 
-- **Deadline Compliance**: 95% on-time completion rate
+- **App Store Rating**: Target 4.5+ stars
 - **User Retention**: 80% retention through critical periods
-- **Feature Adoption**: 70% use of core features
-- **Session Quality**: 15+ minute average sessions
-
-### Technical Performance
-
-- **System Uptime**: 99.9% availability
-- **Response Time**: <200ms API responses
-- **Error Rate**: <0.1% system errors
-- **Security**: Zero data breaches
+- **Feature Adoption**: 70% use of core deadline tracking
+- **Session Quality**: 10+ minute average sessions
 
 ### Business Impact
 
-- **User Satisfaction**: 90% satisfaction score
-- **Employment Success**: 85% job placement rate
-- **Compliance**: <1% immigration violations
-- **Growth**: 20% month-over-month user growth
+- **Deadline Compliance**: 95% on-time completion rate
+- **User Satisfaction**: 90% satisfaction in surveys  
+- **Employment Success**: Track job placement rates
+- **Market Validation**: 1000+ active users by Phase 1 end
+
+### Technical Performance
+
+- **App Performance**: <3 second app launch time
+- **Offline Capability**: 100% core features work offline
+- **Data Sync**: <5 second sync when online (Phase 3)
+- **Crash Rate**: <0.1% crash rate
 
 ---
 
@@ -228,50 +189,47 @@ notifications (id, user_id, type, title, message, is_read, created_at)
 
 ### Technical Risks
 
-- **Data Security**: Sensitive immigration documents
-  - *Mitigation*: End-to-end encryption, regular security audits
-- **System Downtime**: During critical deadlines
-  - *Mitigation*: 99.9% uptime SLA, redundant systems
+- **Data Loss**: Local storage corruption
+  - *Mitigation*: Regular local backups, cloud sync (Phase 3)
+- **Platform Changes**: iOS/Android API changes
+  - *Mitigation*: Stay current with React Native updates
 
-### Business Risks
+### Business Risks  
 
 - **Regulatory Changes**: Immigration law updates
-  - *Mitigation*: Flexible system design, legal monitoring
-- **Liability**: Incorrect information impact
-  - *Mitigation*: Clear disclaimers, professional insurance
+  - *Mitigation*: Flexible data model, legal monitoring
+- **Market Competition**: Similar apps launched
+  - *Mitigation*: Focus on offline-first, superior UX
 
 ### Operational Risks
 
-- **Seasonal Usage**: Peak periods during graduation
-  - *Mitigation*: Auto-scaling infrastructure
-- **User Support**: High volume during critical periods
-  - *Mitigation*: Self-service options, comprehensive documentation
+- **Seasonal Usage**: Peak during graduation periods
+  - *Mitigation*: Performance testing, scalable architecture
+- **Support Volume**: High user support needs
+  - *Mitigation*: Comprehensive in-app help, FAQ system
 
 ---
 
 ## 📈 Current Status
 
-**✅ Completed (Phase 1)**:
+**✅ Foundation Complete**:
 
-- Backend project structure (Spring Boot + Gradle)
-- Dual database support (SQLite dev / PostgreSQL prod)
-- Database schema design and migrations
-- Basic configuration and profiles
+- Backend architecture designed (ready for Phase 3)
+- Database schema finalized
+- Mobile-first strategy defined
 
-**🔄 In Progress**:
+**🔄 Phase 1 In Progress**:
 
-- JPA entity models
-- REST API controllers
-- Authentication system
-- Document management
+- React Native project setup
+- iOS development environment
+- Core mobile features development
 
-**📅 Next Steps**:
+**📅 Next Milestones**:
 
-- Frontend application setup
-- User authentication flow
-- Document upload functionality
-- Deadline tracking system
+- iOS app MVP completion (Month 2)
+- App Store submission (Month 3)
+- User feedback and iteration (Month 3)
 
 ---
 
-*This document will be updated as the project evolves and requirements are refined based on user feedback and technical discoveries.*
+*This document defines what to build. See PROJECT_PLAN.md for how and when to build it. See AGENTS.md for development guidelines.*

@@ -1,232 +1,174 @@
 # Immigration Tracker - Project Plan
 
-## 📋 Project Overview
-
-A comprehensive web and mobile application to help international students navigate immigration processes, track critical deadlines, and maintain compliance for OPT, H1B, and other visa categories.
-
-**Tech Stack**: Spring Boot (Java) + React Web + React Native Mobile  
-**Database**: SQLite (dev) / PostgreSQL (prod)  
-**Build**: Gradle
-
-> 🔍 **For implementation details**: Explore the codebase - `backend/`, `frontend/`, database migrations, and configuration files contain all technical specifications.
+**Strategy**: Mobile-First Offline → Backend Integration → GraphQL Optimization  
+**Current Phase**: Phase 1 - iOS Mobile App Development  
+**Tech Stack**: React Native (Phase 1) → Spring Boot + GraphQL (Phase 3+)
 
 ---
 
 ## 🎯 Project Roadmap
 
-### ✅ Foundation (Complete)
+### 🚀 Phase 1: Offline Mobile App (Current - Months 1-3)
 
-- **Backend Setup**: Spring Boot + Gradle + dual database (SQLite/PostgreSQL)
-- **Database Schema**: Complete entity model with migrations
-- **Development Environment**: Auto-setup with profiles
+**Goal**: Fast time-to-market iOS app with offline capabilities
 
-### 🔄 Phase 1: Infrastructure Setup (Current)
+- **iOS App**: React Native + Local SQLite storage
+- **Core Features**: Immigration tracking, document management, deadline alerts
+- **No Server**: All data stored locally, zero infrastructure costs
+- **Validation**: App Store deployment, user feedback collection
 
-- **Frontend Setup**: React web + React Native mobile apps
-- **Testing Framework**: Unit and integration test foundation
-- **Development Tools**: Scripts and automation
+### 📱 Phase 2: Android & Cross-Platform (Months 4-5)
 
-### 📅 Phase 2: Core Features
+**Goal**: Expand to Android platform
 
-- **Backend APIs**: Authentication, CRUD operations, file uploads
-- **Frontend UI**: Login, dashboard, and core user flows
-- **API Integration**: Connect frontend to backend services
+- **Android App**: Port and optimize for Android
+- **Cross-Platform**: Consistent UI/UX across iOS/Android
+- **Market Expansion**: Google Play Store deployment
 
-### 🚀 Phase 3: User Experience
+### 🌐 Phase 3: Backend Integration (Months 6-9)
 
-- **Dashboard**: Status tracking, deadline alerts, document management
-- **Mobile Features**: Cross-platform React Native functionality
-- **Notifications**: Email alerts and deadline reminders
+**Goal**: Add cloud services and synchronization
 
-### 🔧 Phase 4: Advanced Features
+- **Spring Boot API**: RESTful backend services
+- **Cloud Sync**: Multi-device data synchronization
+- **Authentication**: JWT with offline capability
+- **Web Dashboard**: Basic web interface
 
-- **File Management**: Secure document storage and processing
-- **Analytics**: Immigration status insights and reporting
-- **Compliance**: Automated deadline tracking and validation
+### 🔄 Phase 4: GraphQL Migration (Months 10-12)
 
-### 🚀 Phase 5: Production Ready
+**Goal**: Optimize mobile performance
 
-- **DevOps**: CI/CD pipeline, containerization, monitoring
-- **Security**: Enhanced authentication, data encryption
-- **Performance**: Optimization, caching, scalability
+- **GraphQL API**: Replace REST for better mobile performance
+- **Real-time**: Subscriptions for live updates
+- **Offline-First**: Optimistic updates and caching
 
----
+### 🎯 Phase 5: Advanced Features (Months 13-15)
 
-## 🤝 Contributor Guidelines
+**Goal**: AI-powered and enterprise features
 
-**This PROJECT_PLAN.md is the starting point for all contributors and AI agents working on this project.**
-
-> 🤖 **For AI Agents**: This plan provides the project direction and available tasks. Explore the codebase to understand current implementation details, then pick a task and start contributing. The existing code structure will guide your implementation approach.
-
-### How Contributors Should Use This Plan
-
-#### **🎯 Before Starting Work:**
-
-- **Read this plan thoroughly** to understand current status and priorities
-- **Pick an available task** marked with `[ ]` (not already assigned)
-- **Assign yourself** by changing `[ ]` to `[🔄 @your-username]`
-- **Break down complex tasks** if needed
-
-#### **💻 While Working:**
-
-- **Update progress** in the task description with notes or blockers
-- **Document decisions** that affect other contributors
-- **Add sub-tasks** if you discover the work is more complex
-- **Communicate blockers** using `🚧` prefix in the task
-
-#### **✅ When Completing Work:**
-
-- **Mark task complete** with `[✅ @your-username]`
-- **Update related documentation** (README, KNOWLEDGE.md, etc.)
-- **Create pull request** with reference to the task
-- **Add follow-up tasks** if new work is discovered
-
-### Task Management Rules
-
-- **Keep tasks small** - break down if too complex
-- **Update the plan** - add new tasks as you discover them
-- **Parallel work** - multiple workstreams can run simultaneously
-- **Dependencies** - mark tasks that depend on others with `🔗 Depends on: Task X`
-
-### Workstream Categories
-
-- **🏗️ Backend**: API, database, business logic
-- **🎨 Frontend**: Web and mobile UI/UX
-- **🗄️ Database**: Schema, migrations, data management
-- **🔧 DevOps**: Build, deploy, monitoring
-- **📝 Documentation**: Guides, APIs, architecture
-- **🧪 Testing**: Unit, integration, e2e tests
+- **AI Analytics**: Deadline prediction and risk assessment
+- **Document OCR**: Automatic data extraction
+- **Enterprise**: Advisor dashboards, bulk management
 
 ---
 
-## 📝 Current Sprint - Foundation & Core Features
+## 📝 Current Sprint - Phase 1: Mobile Foundation
 
-### Sprint 1: Backend Project Setup (CURRENT FOCUS)
+### Sprint 1: React Native Setup (CURRENT FOCUS)
 
-#### Phase 1.1: Gradle Project Structure Setup
+#### Mobile Project Setup
 
-- [✅] **Initialize Gradle project structure**
-  - [✅] Create backend directory structure
-  - [✅] Set up build.gradle with dependencies
-  - [✅] Configure gradle.properties  
-  - [✅] Set up settings.gradle
-  - [✅] Create application main class
-  - [✅] Create basic package structure
+- [✅ @claude] **MA-001: React Native Project Setup**
+  - ✅ Initialize Expo project with expo-template-blank-typescript
+  - ✅ Clean project structure for Phase 1 focus
+  - ✅ Update README.md for mobile-first approach
+  - ✅ Install all dependencies (UI, Navigation, Offline features)
+  - ✅ Project verified and ready for development
 
-#### Phase 1.2: Database Configuration Setup  
+#### Local Database Architecture  
 
-- [✅] **Configure dual database support (SQLite/PostgreSQL)**
-  - [✅] Create application.yml files for different profiles
-  - [✅] Set up database configuration classes
-  - [✅] Configure Hibernate dialects
-  - [✅] Set up Flyway migration configuration
-  - [✅] Test database auto-selection logic
+- [🔄 @claude] **MA-002: Local Database Architecture**
+  - Integrate expo-sqlite for offline database
+  - Create database schema from existing migrations
+  - Implement offline-first data management
 
-#### Phase 1.3: Development Environment ✅
+#### Core Data Models
 
-- [✅] **Set up development foundation**
-  - [✅] Project structure and build system
-  - [✅] Database configuration and migrations
-  - [✅] Application profiles and configuration
+- [ ] **MA-003: Core Data Models**
+  - Create TypeScript interfaces for all entities
+  - Implement local data access layer
+  - Set up offline state management
+
+#### Navigation & UI Foundation
+
+- [ ] **MA-004: Navigation & UI Foundation**
+  - Set up React Navigation for iOS
+  - Create screen structure and navigation flow
+  - Implement consistent UI theme
+
+#### Immigration Features
+
+- [ ] **MA-005: Immigration Status Tracking**
+  - Build status management screens
+  - Implement deadline tracking with local notifications
+  - Create timeline and progress visualization
+
+- [ ] **MA-006: Document Management**
+  - Local file storage and document organization
+  - Document categorization and viewing
+  - Basic editing capabilities
+
+#### iOS Deployment
+
+- [ ] **MA-007: iOS App Store Preparation**
+  - Configure app icons, splash screens, metadata
+  - Set up iOS signing and provisioning
+  - Prepare TestFlight and App Store submission
 
 ---
 
-## 🎯 Available Tasks - Pick and Assign Yourself
+## 📋 Task Management Rules
 
-### 🏗️ Backend Workstream
+### How to Use This Plan
 
-**🎯 Task BE-001: JPA Entity Models** `[ ]`
+1. **Pick Available Tasks**: Choose tasks marked `[ ]`
+2. **Assign Yourself**: Change to `[🔄 @your-username]`  
+3. **Update Progress**: Add notes or blockers to task description
+4. **Mark Complete**: Change to `[✅ @your-username]` when done
+5. **Add New Tasks**: Break down complex work as needed
 
-- Create JPA entities based on database schema (check migration files)
-- Add validation annotations and entity relationships
+### Task Categories
 
-**🎯 Task BE-002: Repository Layer** `[ ]`
+- **MA-xxx**: Mobile App tasks (Phase 1)
+- **BE-xxx**: Backend tasks (Phase 3)
+- **GQL-xxx**: GraphQL tasks (Phase 4)
 
-- 🔗 Depends on: BE-001
-- Implement Spring Data JPA repositories with custom queries
+### Dependencies
 
-**🎯 Task BE-003: Service Layer Foundation** `[ ]`
-
-- 🔗 Depends on: BE-002
-- Create business logic services (User, Document, Deadline)
-
-**🎯 Task BE-004: Authentication System** `[ ]`
-
-- Implement JWT-based authentication with Spring Security
-
-**🎯 Task BE-005: File Upload API** `[ ]`
-
-- 🔗 Depends on: BE-003
-- Create secure file upload/download REST endpoints
-
-### 🎨 Frontend Workstream
-
-**🎯 Task FE-001: React Web App Setup** `[ ]`
-
-- Initialize React project with TypeScript and modern tooling
-
-**🎯 Task FE-002: React Native App Setup** `[ ]`
-
-- Initialize React Native project for iOS/Android
-
-**🎯 Task FE-003: Shared API Client** `[ ]`
-
-- Create shared TypeScript types and API client utilities
-
-**🎯 Task FE-004: Authentication UI (Web)** `[ ]`
-
-- 🔗 Depends on: FE-001, FE-003
-- Create login/register forms and authentication flow
-
-**🎯 Task FE-005: Authentication UI (Mobile)** `[ ]`
-
-- 🔗 Depends on: FE-002, FE-003  
-- Create login/register screens and authentication flow
-
-### 🔧 DevOps Workstream
-
-**🎯 Task DO-001: Development Scripts** `[ ]`
-
-- Create database and development utility scripts
-
-**🎯 Task DO-002: GitHub Actions CI/CD** `[ ]`
-
-- Set up automated testing and deployment pipeline
-
-**🎯 Task DO-003: Docker Development Setup** `[ ]`
-
-- Create Docker configuration for development and production
-
-### 🧪 Testing Workstream
-
-**🎯 Task TE-001: Backend Unit Tests** `[ ]`
-
-- 🔗 Depends on: BE-002
-- Set up comprehensive unit testing for repositories and services
-
-**🎯 Task TE-002: API Integration Tests** `[ ]`
-
-- 🔗 Depends on: BE-004
-- Create integration tests for REST endpoints
-
-### 📝 Documentation Workstream
-
-**🎯 Task DOC-001: API Documentation** `[ ]`
-
-- 🔗 Depends on: BE-004
-- Set up Swagger/OpenAPI documentation for REST endpoints
-
-**🎯 Task DOC-002: Development Guide** `[ ]`
-
-- Create comprehensive setup and contribution guide
+Tasks marked with `🔗 Depends on: XXX` must wait for prerequisite completion.
 
 ---
 
 ## 🚀 Quick Start
 
-1. **Explore the codebase** - Check `README.md` for setup instructions
-2. **Pick a task** from the available tasks above
-3. **Assign yourself** by updating the task status to `[🔄 @your-username]`
-4. **Start contributing** - the existing code structure will guide your approach
+### For New Contributors
 
-> **Foundation Complete**: Backend infrastructure with Gradle, dual database support (SQLite/PostgreSQL), and database schema is ready. Pick any task and start building!
+1. **Read Documentation**: Check README.md and PROJECT_REQUIREMENTS.md
+2. **Set Up Environment**: Install React Native CLI and Xcode
+3. **Pick First Task**: Start with MA-001 (React Native Project Setup)
+4. **Follow Guidelines**: See AGENTS.md for coding standards
+
+### Development Commands
+
+```bash
+# Mobile Development (Current)
+npx react-native init ImmigrationTrackerMobile --template react-native-template-typescript
+cd ios && pod install
+npx react-native run-ios
+
+# Backend Development (Phase 3)
+cd backend && ./gradlew bootRun
+```
+
+---
+
+## 📊 Success Metrics
+
+### Phase 1 Goals
+
+- [ ] iOS app deployed to App Store
+- [ ] Core immigration tracking features working offline
+- [ ] User feedback collected and analyzed
+- [ ] Market validation achieved
+
+### Future Phases
+
+- **Phase 2**: Android app with feature parity
+- **Phase 3**: Cloud sync and multi-device support  
+- **Phase 4**: GraphQL optimization and real-time features
+
+---
+
+**Current Priority**: Complete Phase 1 mobile app for iOS with offline capabilities. Backend work is preserved for Phase 3 integration.
+
+*For detailed specifications, see PROJECT_REQUIREMENTS.md. For AI agent guidelines, see AGENTS.md.*
