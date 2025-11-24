@@ -83,8 +83,8 @@ ImmigrationTracker/
         │   ├── utils/         # Date calculations, test data ✅
         │   ├── constants/     # Processing times, fees, URLs ✅
         │   ├── components/    # Reusable UI components (TODO)
-        │   ├── screens/       # App screens and navigation (TODO)
-        │   └── navigation/    # Navigation setup (TODO)
+        │   ├── screens/       # App screens (Status, Timeline, To Do, Settings) ✅
+        │   └── navigation/    # Bottom tab navigation ✅
         ├── ios/               # iOS-specific files
         ├── android/           # Android files (Phase 2)
         ├── App.tsx            # Main app component
@@ -103,7 +103,7 @@ npx expo start              # Development server
 
 ### ✅ Phase 1: Mobile-First Offline App (Current)
 
-**Sprint 1 Progress: 3/7 tasks complete (43%)**
+**Sprint 1 Progress: 5/7 tasks complete (71%)**
 
 - [✅] **MA-001: Project Setup** - Expo + TypeScript + all dependencies
 - [✅] **MA-002: State Management & Data Models** - Complete data layer
@@ -117,6 +117,20 @@ npx expo start              # Development server
   - ✅ Bottom tab navigation (4 main screens)
   - ✅ Material Design 3 theme
   - ✅ Placeholder screens with UI components
+- [✅] **MA-004: Immigration Status Screen** - Fully functional
+  - ✅ Current status display with color-coded chips
+  - ✅ Next eligible status recommendations
+  - ✅ Top 5 upcoming deadlines with priority indicators
+  - ✅ Required action items with icons
+  - ✅ Real-time data from UserProfileStorage and services
+  - ✅ Loading, error handling, and pull-to-refresh
+- [✅] **MA-005: Timeline Screen** - Complete timeline view
+  - ✅ Full immigration timeline with all events
+  - ✅ Visual progress indicators (% completion)
+  - ✅ Filter by phase (All, F-1, OPT, H-1B)
+  - ✅ Past/future event differentiation
+  - ✅ Color-coded by type and urgency
+  - ✅ Loading, error handling, and pull-to-refresh
 - [ ] **MA-004**: Immigration status tracking screens
 - [ ] **MA-005**: Deadline tracking with notifications
 - [ ] **MA-006**: Document management
