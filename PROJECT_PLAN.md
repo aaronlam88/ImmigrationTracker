@@ -88,18 +88,23 @@
 
 #### Immigration Features
 
-- [ ] **MA-004: Immigration Status Screen**
-  - Display current immigration status
-  - Show next eligible status
-  - List upcoming deadlines (top 5)
-  - Display required actions
-  - Integrate with TimelineService
+- [✅ @claude] **MA-004: Immigration Status Screen**
+  - ✅ Display current immigration status with color-coded chips
+  - ✅ Show next eligible immigration status
+  - ✅ List upcoming deadlines (top 5) with priority indicators
+  - ✅ Display required action items with icons
+  - ✅ Integrate with TimelineService, StatusService, UserProfileStorage
+  - ✅ Add loading states, error handling, and pull-to-refresh
+  - ✅ Implement onboarding state for new users
 
-- [ ] **MA-005: Timeline Screen**
-  - Display full immigration timeline
-  - Visual progress indicators
-  - Interactive deadline calendar
-  - Filter by phase (F1, OPT, H1B)
+- [✅ @claude] **MA-005: Timeline Screen**
+  - ✅ Display full immigration timeline with all events
+  - ✅ Visual progress indicators showing completion percentage
+  - ✅ Interactive timeline view with past/future event differentiation
+  - ✅ Filter by phase (All, F1, OPT, H1B) with segmented buttons
+  - ✅ Group events by immigration phase
+  - ✅ Color-coded events by type and urgency
+  - ✅ Loading states, error handling, and pull-to-refresh
 
 - [ ] **MA-006: Local Notifications**
   - Set up expo-notifications
