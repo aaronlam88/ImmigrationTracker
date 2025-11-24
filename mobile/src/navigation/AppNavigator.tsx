@@ -8,16 +8,16 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
 
-// Import screens (will create these next)
+// Import screens
 import StatusScreen from '../screens/StatusScreen';
 import TimelineScreen from '../screens/TimelineScreen';
-import DocumentsScreen from '../screens/DocumentsScreen';
+import ToDoScreen from '../screens/ToDoScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 export type RootTabParamList = {
   Status: undefined;
   Timeline: undefined;
-  Documents: undefined;
+  ToDo: undefined;
   Settings: undefined;
 };
 
@@ -68,13 +68,13 @@ export default function AppNavigator() {
       />
       
       <Tab.Screen
-        name="Documents"
-        component={DocumentsScreen}
+        name="ToDo"
+        component={ToDoScreen}
         options={{
-          title: 'Documents',
-          tabBarLabel: 'Documents',
+          title: 'To-Do List',
+          tabBarLabel: 'To Do',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="file-document-multiple" size={size} color={color} />
+            <MaterialCommunityIcons name="clipboard-check-outline" size={size} color={color} />
           ),
         }}
       />
