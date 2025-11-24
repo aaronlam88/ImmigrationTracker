@@ -33,6 +33,7 @@
 - **TypeScript strict mode**: All mobile code must have proper typing
 - **Error handling**: Graceful degradation for all failure scenarios
 - **Performance first**: Optimize for mobile devices and battery life
+- **Linter compliance**: After creating or modifying any code file, ALWAYS check for linter errors and fix them immediately
 
 ### **Documentation Requirements**
 
@@ -45,12 +46,14 @@
 #### **📋 Documentation Update Protocol (MANDATORY)**
 
 **AFTER EVERY SUCCESSFUL STEP:**
+
 1. **Update PROJECT_PLAN.md** - Change task status from `[ ]` to `[✅ @agent-name]`
 2. **Update README.md** - If setup, dependencies, or workflow changes
 3. **Update progress tracking** - Mark completed items in status sections
 4. **Commit documentation changes** - Keep docs in sync with code
 
 **WHAT TO UPDATE:**
+
 - ✅ **Task completion** in PROJECT_PLAN.md
 - ✅ **Progress checklists** in README.md  
 - ✅ **Technology stack** if new dependencies added
@@ -58,6 +61,7 @@
 - ✅ **Current status** sections
 
 **WHEN TO UPDATE:**
+
 - ✅ **After completing any task** from PROJECT_PLAN.md
 - ✅ **After installing new dependencies**
 - ✅ **After major feature implementation**
@@ -138,9 +142,14 @@ mobile/src/
 1. **Select Task** from PROJECT_PLAN.md
 2. **Update Status** to `[🔄 @your-name]`
 3. **Follow Standards** above
-4. **Test Thoroughly** - especially offline functionality
-5. **Mark Complete** with `[✅ @your-name]`
-6. **📋 UPDATE DOCUMENTATION** (MANDATORY):
+4. **Write Code** - following TypeScript strict mode and best practices
+5. **🔍 CHECK LINTER** (MANDATORY):
+   - Run linter on all modified files
+   - Fix all linter errors before proceeding
+   - Ensure TypeScript type safety
+6. **Test Thoroughly** - especially offline functionality
+7. **Mark Complete** with `[✅ @your-name]`
+8. **📋 UPDATE DOCUMENTATION** (MANDATORY):
    - Update PROJECT_PLAN.md task status
    - Update README.md progress checklist
    - Update any affected setup instructions
@@ -157,10 +166,14 @@ mobile/src/
 - Leave tasks in `[🔄 @agent-name]` state when switching work
 - **Leave documentation outdated after completing tasks**
 - **Skip updating PROJECT_PLAN.md task status**
+- **Ignore linter errors or warnings**
+- **Commit code without checking for linter issues**
 
 #### ✅ **ALWAYS**
 
 - Test on actual mobile devices when possible
+- **Check linter after creating or modifying any code file**
+- **Fix all linter errors immediately before moving forward**
 - **Update documentation after every successful step**
 - Update task status immediately when starting/completing
 - Ask for clarification before making architectural changes
@@ -181,6 +194,7 @@ mobile/src/
 **CRITICAL**: Documentation must stay synchronized with code changes.
 
 **Required Updates After Each Step:**
+
 ```markdown
 # PROJECT_PLAN.md updates:
 - [ ] Task → [🔄 @agent] → [✅ @agent]
@@ -195,6 +209,7 @@ mobile/src/
 ```
 
 **Documentation Sync Checklist:**
+
 - ✅ Task status matches actual completion
 - ✅ Progress bars reflect real progress  
 - ✅ Setup instructions work for new developers
@@ -233,7 +248,7 @@ cd backend && ./gradlew bootRun
 
 ### 🎯 Current Focus
 
-**Phase 1: Mobile-First Offline App**
+#### Phase 1: Mobile-First Offline App
 
 - Priority: iOS app with local SQLite storage
 - Goal: Fast time-to-market, low cost validation
@@ -244,6 +259,8 @@ cd backend && ./gradlew bootRun
 ## 🚀 Agent Onboarding Checklist
 
 **For new AI agents joining the project:**
+
+## Agent Onboarding Phases
 
 ### **Phase 1: Understanding (5 minutes)**
 
