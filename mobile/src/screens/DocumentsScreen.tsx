@@ -5,39 +5,42 @@
 
 import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
-import { Card, Title, Paragraph, List, FAB } from 'react-native-paper';
+import { Card, List, FAB, Text } from 'react-native-paper';
+import { Spacing, Colors, ContainerStyles, CardStyles, TextStyles } from '../theme';
+import { useTranslation } from '../i18n';
 
 export default function DocumentsScreen() {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <ScrollView>
         <Card style={styles.card}>
           <Card.Content>
-            <Title>Documents</Title>
-            <Paragraph style={styles.subtitle}>
-              Track your immigration documents
-            </Paragraph>
+            <Text variant="titleLarge">{t('documents.title')}</Text>
+            <Text variant="bodyMedium" style={styles.subtitle}>
+              {t('documents.subtitle')}
+            </Text>
           </Card.Content>
         </Card>
 
         <Card style={styles.card}>
           <Card.Content>
-            <Title>Visa & Status Documents</Title>
+            <Text variant="titleLarge">{t('documents.visaStatusDocuments')}</Text>
             <List.Item
-              title="Passport"
-              description="Valid until: Dec 2028"
+              title={t('documents.passport')}
+              description={t('documents.passportValidUntil')}
               left={props => <List.Icon {...props} icon="passport" />}
               right={props => <List.Icon {...props} icon="chevron-right" />}
             />
             <List.Item
-              title="I-20"
-              description="Current program authorization"
+              title={t('documents.i20')}
+              description={t('documents.i20Description')}
               left={props => <List.Icon {...props} icon="file-document" />}
               right={props => <List.Icon {...props} icon="chevron-right" />}
             />
             <List.Item
-              title="F-1 Visa"
-              description="Entry stamp in passport"
+              title={t('documents.f1Visa')}
+              description={t('documents.f1VisaDescription')}
               left={props => <List.Icon {...props} icon="card-account-details" />}
               right={props => <List.Icon {...props} icon="chevron-right" />}
             />
@@ -46,10 +49,10 @@ export default function DocumentsScreen() {
 
         <Card style={styles.card}>
           <Card.Content>
-            <Title>Forms & Applications</Title>
+            <Text variant="titleLarge">{t('documents.formsApplications')}</Text>
             <List.Item
-              title="I-765 (OPT Application)"
-              description="Not yet submitted"
+              title={t('documents.i765')}
+              description={t('documents.i765Description')}
               left={props => <List.Icon {...props} icon="file-document-edit" />}
               right={props => <List.Icon {...props} icon="chevron-right" />}
             />
@@ -60,7 +63,7 @@ export default function DocumentsScreen() {
       <FAB
         style={styles.fab}
         icon="plus"
-        label="Add Document"
+        label={t('documents.addDocument')}
         onPress={() => {
           // TODO: Implement in Phase 2
           console.log('Add document tapped');
@@ -71,21 +74,15 @@ export default function DocumentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  card: {
-    margin: 16,
-    marginBottom: 8,
-  },
+  container: ContainerStyles.screen,
+  card: CardStyles.card,
   subtitle: {
-    color: '#666',
-    marginTop: 4,
+    ...TextStyles.mutedText,
+    marginTop: Spacing.xs,
   },
   fab: {
     position: 'absolute',
-    margin: 16,
+    margin: Spacing.md,
     right: 0,
     bottom: 0,
   },

@@ -4,8 +4,9 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ActivityIndicator, Paragraph } from 'react-native-paper';
+import { View } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native-paper';
+import { ContainerStyles, TextStyles } from '../../theme/sharedStyles';
 
 export interface LoadingViewProps {
   /** Optional custom loading message */
@@ -24,25 +25,14 @@ export interface LoadingViewProps {
  */
 export function LoadingView({ message = 'Loading...', size = 'large' }: LoadingViewProps) {
   return (
-    <View style={styles.container}>
+    <View style={ContainerStyles.centered}>
       <ActivityIndicator size={size} />
-      {message && <Paragraph style={styles.message}>{message}</Paragraph>}
+      {message && (
+        <Text variant="bodyMedium" style={TextStyles.loadingText}>
+          {message}
+        </Text>
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-  },
-  message: {
-    marginTop: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-});
 

@@ -34,6 +34,76 @@
 - **Error handling**: Graceful degradation for all failure scenarios
 - **Performance first**: Optimize for mobile devices and battery life
 - **Linter compliance**: After creating or modifying any code file, ALWAYS check for linter errors and fix them immediately
+- **i18n compliance**: ALL user-facing text MUST use i18n translations (see i18n rules below)
+
+#### **🌐 Internationalization (i18n) Rules (MANDATORY)**
+
+**CRITICAL**: This app supports English and Chinese Simplified. ALL user-facing text MUST be translatable.
+
+**REQUIRED PRACTICES:**
+
+1. **NEVER hardcode user-facing strings**:
+   ```typescript
+   // ❌ WRONG - Hardcoded string
+   <Text>Welcome to Immigration Tracker</Text>
+   <Button>Save Profile</Button>
+   Alert.alert('Error', 'Failed to save');
+   
+   // ✅ CORRECT - Use i18n
+   <Text>{t('status.noProfile')}</Text>
+   <Button>{t('common.save')}</Button>
+   Alert.alert(t('common.error'), t('settings.failedToSave'));
+   ```
+
+2. **ALWAYS use `useTranslation` hook**:
+   ```typescript
+   import { useTranslation } from '../i18n';
+   
+   export default function MyScreen() {
+     const { t } = useTranslation();
+     return <Text>{t('myScreen.title')}</Text>;
+   }
+   ```
+
+3. **Add translations for ALL new strings**:
+   - Add English translation to `mobile/src/i18n/locales/en.json`
+   - Add Chinese Simplified translation to `mobile/src/i18n/locales/zh-CN.json`
+   - Use nested keys for organization: `screen.section.item`
+   - Example: `todo.currentFocus`, `status.upcomingDeadlines`
+
+4. **Translation key naming convention**:
+   ```json
+   {
+     "common": { "save": "Save", "cancel": "Cancel" },
+     "status": { "title": "Current Status", "noProfile": "Welcome..." },
+     "todo": { "currentFocus": "Current Focus", "daysLeft": "days left" }
+   }
+   ```
+
+5. **When adding new features**:
+   - ✅ Import `useTranslation` hook
+   - ✅ Add all strings to both `en.json` and `zh-CN.json`
+   - ✅ Use `t('key')` for all user-facing text
+   - ✅ Test language switching works correctly
+   - ❌ NEVER skip i18n for "quick" features
+   - ❌ NEVER use hardcoded English strings
+
+6. **Dynamic content exceptions**:
+   - Dates, numbers, calculations: Use `formatDisplayDate()`, `getDaysUntil()` etc.
+   - User-generated content: Can remain as-is (names, custom notes)
+   - API responses: Should be translated if user-facing
+   - Status labels: Use `getStatusLabel()` which handles i18n internally
+
+**CHECKLIST FOR NEW FEATURES:**
+
+- [ ] All user-facing text uses `t('translation.key')`
+- [ ] English translations added to `en.json`
+- [ ] Chinese Simplified translations added to `zh-CN.json`
+- [ ] Language switching tested (Settings → Language)
+- [ ] No hardcoded strings in UI components
+- [ ] Error messages use translations
+- [ ] Button labels use translations
+- [ ] Placeholder text uses translations
 
 ### **Documentation Requirements**
 
@@ -147,9 +217,14 @@ mobile/src/
    - Run linter on all modified files
    - Fix all linter errors before proceeding
    - Ensure TypeScript type safety
-6. **Test Thoroughly** - especially offline functionality
-7. **Mark Complete** with `[✅ @your-name]`
-8. **📋 UPDATE DOCUMENTATION** (MANDATORY):
+6. **🌐 CHECK i18n COMPLIANCE** (MANDATORY):
+   - Verify ALL user-facing text uses `t('translation.key')`
+   - Add/update translations in both `en.json` and `zh-CN.json`
+   - Test language switching works correctly
+   - No hardcoded strings in UI components
+7. **Test Thoroughly** - especially offline functionality and i18n
+8. **Mark Complete** with `[✅ @your-name]`
+9. **📋 UPDATE DOCUMENTATION** (MANDATORY):
    - Update PROJECT_PLAN.md task status
    - Update README.md progress checklist
    - Update any affected setup instructions
@@ -168,6 +243,9 @@ mobile/src/
 - **Skip updating PROJECT_PLAN.md task status**
 - **Ignore linter errors or warnings**
 - **Commit code without checking for linter issues**
+- **Hardcode user-facing strings** - Always use i18n translations
+- **Add new features without i18n support** - Must work in both English and Chinese Simplified
+- **Skip adding translations** - Both `en.json` and `zh-CN.json` must be updated
 
 #### ✅ **ALWAYS**
 
@@ -180,6 +258,9 @@ mobile/src/
 - Follow the mobile-first, offline-first approach
 - Write code that works without internet connection
 - **Keep PROJECT_PLAN.md and README.md current**
+- **Use i18n for ALL user-facing text** - Import `useTranslation` and use `t('key')`
+- **Add translations to both language files** - Update `en.json` and `zh-CN.json` together
+- **Test language switching** - Verify new features work in both English and Chinese Simplified
 
 #### 🔄 **Agent Handoff Protocol**
 

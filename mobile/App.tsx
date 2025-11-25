@@ -13,6 +13,9 @@ import { StatusBar } from 'expo-status-bar';
 import AppNavigator from './src/navigation/AppNavigator';
 import { lightTheme } from './src/theme/theme';
 
+// Initialize i18n
+import './src/i18n/config';
+
 export default function App() {
   return (
     <SafeAreaProvider>

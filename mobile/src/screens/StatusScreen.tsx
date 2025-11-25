@@ -1,21 +1,28 @@
 /**
  * Status Screen
  * Displays current immigration status, upcoming deadlines, and required actions
+ * Includes profile editing functionality
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, List, Chip, Button, ActivityIndicator, Text } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, RefreshControl, Alert } from 'react-native';
+import { Card, List, Chip, Button, ActivityIndicator, Text, Portal, Modal, Divider, Snackbar } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserProfile } from '../models/UserProfile';
 import { Deadline, ActionItem } from '../models/Timeline';
 import { UserProfileStorage } from '../storage/UserProfileStorage';
 import { TimelineService } from '../services/TimelineService';
 import { StatusService } from '../services/StatusService';
-import { getStatusLabel, ImmigrationStatus } from '../models/ImmigrationStatus';
-import { formatDate, getDaysUntil } from '../utils/dateCalculations';
+import { getStatusLabel, ImmigrationStatus, getAllStatuses } from '../models/ImmigrationStatus';
+import { formatDisplayDate, getDaysUntil } from '../utils/dateCalculations';
+import { Spacing, Colors, FontSizes, ContainerStyles, CardStyles, TextStyles, ImmigrationColors, lightTheme } from '../theme';
+import { useTranslation } from '../i18n';
+import { SmartProfileForm, StatusSelector } from '../components/profile';
+import { createEmptyProfile } from '../models/UserProfile';
+import { validateProfileForStatus } from '../services/ProfileFormService';
 
 export default function StatusScreen() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [actionItems, setActionItems] = useState<ActionItem[]>([]);
@@ -23,16 +30,24 @@ export default function StatusScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Profile editing state
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<ImmigrationStatus>(ImmigrationStatus.F1_STUDENT);
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const loadData = async () => {
     try {
       setError(null);
       
-      // Load user profile
       const userProfile = await UserProfileStorage.get();
       
       if (!userProfile) {
-        // No profile exists yet - show onboarding state
         setProfile(null);
         setLoading(false);
         return;
@@ -40,11 +55,9 @@ export default function StatusScreen() {
 
       setProfile(userProfile);
 
-      // Generate timeline and deadlines
       const timeline = TimelineService.generateUserTimeline(userProfile);
       const allDeadlines = timeline.deadlines;
       
-      // Sort by date and take top 5 upcoming deadlines
       const upcomingDeadlines = allDeadlines
         .filter(d => new Date(d.dueDate) >= new Date())
         .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
@@ -52,30 +65,42 @@ export default function StatusScreen() {
       
       setDeadlines(upcomingDeadlines);
 
-      // Get action items
       const actions = timeline.actionItems
         .filter(a => a.dueDate ? new Date(a.dueDate) >= new Date() : true)
         .slice(0, 3);
       setActionItems(actions);
 
-      // Get recommended next status
-      const recommended = StatusService.getRecommendedNextStatus(userProfile);
+      const recommended = StatusService.getRecommendedNextStatus(userProfile.currentStatus);
       setNextStatus(recommended);
 
       setLoading(false);
     } catch (err) {
       console.error('Error loading status data:', err);
-      setError('Failed to load status information');
+      setError(t('common.error'));
       setLoading(false);
     }
   };
 
-  // Load data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, [])
   );
+
+  useEffect(() => {
+    if (profile && !isInitialized) {
+      setSelectedStatus(profile.currentStatus);
+      setFormValues({
+        graduationDate: profile.graduationDate || '',
+        eadReceivedDate: profile.eadReceivedDate || '',
+        eadExpiryDate: profile.eadExpiryDate || '',
+        hasStemDegree: profile.hasStemDegree || false,
+        hasJobOffer: profile.hasJobOffer || false,
+        employerName: profile.currentEmployer || '',
+      });
+      setIsInitialized(true);
+    }
+  }, [profile, isInitialized]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -83,54 +108,105 @@ export default function StatusScreen() {
     setRefreshing(false);
   };
 
+  const handleEditProfile = () => {
+    if (profile) {
+      setSelectedStatus(profile.currentStatus);
+      setFormValues({
+        graduationDate: profile.graduationDate || '',
+        eadReceivedDate: profile.eadReceivedDate || '',
+        eadExpiryDate: profile.eadExpiryDate || '',
+        hasStemDegree: profile.hasStemDegree || false,
+        hasJobOffer: profile.hasJobOffer || false,
+        employerName: profile.currentEmployer || '',
+      });
+    }
+    setEditModalVisible(true);
+  };
+
+  const handleStatusSelect = (status: ImmigrationStatus) => {
+    setSelectedStatus(status);
+    setFormErrors({});
+    setFormValues({});
+  };
+
+  const handleFieldChange = (field: string, value: any) => {
+    setFormValues(prev => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSaving(true);
+      setFormErrors({});
+
+      const validation = validateProfileForStatus(selectedStatus, formValues);
+      if (!validation.isValid) {
+        const errorMap: Record<string, string> = {};
+        validation.errors.forEach(err => {
+          const field = err.split(' ')[0].toLowerCase();
+          errorMap[field] = err;
+        });
+        setFormErrors(errorMap);
+        setSaving(false);
+        return;
+      }
+
+      let updatedProfile;
+      if (profile) {
+        updatedProfile = {
+          ...profile,
+          currentStatus: selectedStatus,
+          graduationDate: formValues.graduationDate || profile.graduationDate,
+          eadReceivedDate: formValues.eadReceivedDate || profile.eadReceivedDate,
+          eadExpiryDate: formValues.eadExpiryDate || profile.eadExpiryDate,
+          hasStemDegree: formValues.hasStemDegree ?? profile.hasStemDegree,
+          hasJobOffer: formValues.hasJobOffer ?? profile.hasJobOffer,
+          currentEmployer: formValues.employerName || profile.currentEmployer,
+          updatedAt: new Date().toISOString(),
+        };
+      } else {
+        updatedProfile = {
+          ...createEmptyProfile(),
+          name: 'User',
+          currentStatus: selectedStatus,
+          graduationDate: formValues.graduationDate,
+          eadReceivedDate: formValues.eadReceivedDate,
+          eadExpiryDate: formValues.eadExpiryDate,
+          hasStemDegree: formValues.hasStemDegree || false,
+          hasJobOffer: formValues.hasJobOffer || false,
+          currentEmployer: formValues.employerName,
+        };
+      }
+
+      await UserProfileStorage.save(updatedProfile);
+      await loadData();
+      setSaving(false);
+      setEditModalVisible(false);
+      setSnackbarMessage(profile ? t('settings.profileUpdated') : t('settings.profileCreated'));
+      setSnackbarVisible(true);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setSaving(false);
+      Alert.alert(t('common.error'), t('settings.failedToSave'));
+    }
+  };
+
   const getDeadlinePriorityColor = (priority: string): string => {
     switch (priority) {
       case 'CRITICAL':
-        return '#D32F2F'; // Red
+        return ImmigrationColors.priority.CRITICAL;
       case 'HIGH':
-        return '#F57C00'; // Orange
+        return ImmigrationColors.priority.HIGH;
       case 'MEDIUM':
-        return '#FBC02D'; // Yellow
+        return ImmigrationColors.priority.MEDIUM;
       default:
-        return '#388E3C'; // Green
-    }
-  };
-
-  const getDeadlineIcon = (type: string): string => {
-    switch (type) {
-      case 'OPT_APPLICATION_WINDOW_OPENS':
-      case 'STEM_OPT_APPLICATION_WINDOW_OPENS':
-        return 'calendar-clock';
-      case 'OPT_APPLICATION_DEADLINE':
-      case 'STEM_OPT_APPLICATION_DEADLINE':
-        return 'calendar-alert';
-      case 'EAD_EXPIRY':
-        return 'card-account-details-outline';
-      case 'I983_SUBMISSION':
-        return 'file-document-edit';
-      case 'H1B_LOTTERY':
-        return 'ticket';
-      case 'H1B_APPROVAL_EXPECTED':
-        return 'check-circle-outline';
-      default:
-        return 'calendar';
-    }
-  };
-
-  const getActionIcon = (category: string): string => {
-    switch (category) {
-      case 'APPLICATION':
-        return 'file-document-edit';
-      case 'DOCUMENTATION':
-        return 'folder-open';
-      case 'TRACKING':
-        return 'magnify';
-      case 'PREPARATION':
-        return 'school';
-      case 'EMPLOYER':
-        return 'briefcase';
-      default:
-        return 'information';
+        return ImmigrationColors.priority.LOW;
     }
   };
 
@@ -138,7 +214,9 @@ export default function StatusScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" />
-        <Paragraph style={styles.loadingText}>Loading your status...</Paragraph>
+        <Text variant="bodyMedium" style={styles.loadingText}>
+          {t('common.loading')}
+        </Text>
       </View>
     );
   }
@@ -148,7 +226,7 @@ export default function StatusScreen() {
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
         <Button mode="contained" onPress={loadData} style={styles.retryButton}>
-          Retry
+          {t('common.retry')}
         </Button>
       </View>
     );
@@ -157,213 +235,284 @@ export default function StatusScreen() {
   if (!profile) {
     return (
       <View style={styles.centerContainer}>
-        <Title>Welcome to Immigration Tracker</Title>
-        <Paragraph style={styles.onboardingText}>
-          Let's set up your profile to track your immigration journey.
-        </Paragraph>
+        <Text variant="titleLarge">{t('status.noProfile')}</Text>
+        <Text variant="bodyMedium" style={styles.onboardingText}>
+          {t('status.noProfileDescription')}
+        </Text>
         <Button 
           mode="contained" 
-          onPress={() => {/* TODO: Navigate to profile setup */}}
+          onPress={() => setEditModalVisible(true)}
           style={styles.setupButton}
         >
-          Set Up Profile
+          {t('status.setUpProfile')}
         </Button>
+
+        {/* Create Profile Modal */}
+        <Portal>
+          <Modal
+            visible={editModalVisible}
+            onDismiss={() => setEditModalVisible(false)}
+            contentContainerStyle={styles.modalContainer}
+          >
+            <Card style={styles.modalCard}>
+              <Card.Content>
+                <Text variant="titleLarge" style={styles.modalTitle}>
+                  {t('status.createProfile')}
+                </Text>
+                <StatusSelector
+                  value={selectedStatus}
+                  statuses={getAllStatuses()}
+                  onChange={handleStatusSelect}
+                />
+                <Divider style={styles.divider} />
+                <SmartProfileForm
+                  key={selectedStatus}
+                  status={selectedStatus}
+                  values={formValues}
+                  onChange={handleFieldChange}
+                  errors={formErrors}
+                />
+                <Button
+                  mode="contained"
+                  onPress={handleSaveProfile}
+                  loading={saving}
+                  disabled={saving}
+                  style={styles.saveButton}
+                >
+                  {t('profile.startTracking')}
+                </Button>
+              </Card.Content>
+            </Card>
+          </Modal>
+        </Portal>
       </View>
     );
   }
 
   return (
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Current Status Card */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Current Status</Title>
-          <Chip 
-            style={[
-              styles.statusChip,
-              { backgroundColor: '#E8DEF8' }
-            ]}
-            textStyle={{ color: '#6750A4' }}
-          >
-            {getStatusLabel(profile.currentStatus)}
-          </Chip>
-          <Paragraph style={styles.description}>
-            {profile.currentStatus === ImmigrationStatus.F1_STUDENT && 
-              'You are currently on F-1 student visa status. Focus on maintaining your studies and prepare for your next steps.'
-            }
-            {profile.currentStatus === ImmigrationStatus.OPT_PENDING && 
-              'Your OPT application is being processed. You can start working once you receive your EAD card.'
-            }
-            {profile.currentStatus === ImmigrationStatus.OPT_APPROVED && 
-              'Your OPT is approved! You can work for up to 12 months (or 36 months with STEM extension).'
-            }
-            {profile.currentStatus === ImmigrationStatus.STEM_OPT_PENDING && 
-              'Your STEM OPT extension application is being processed.'
-            }
-            {profile.currentStatus === ImmigrationStatus.STEM_OPT_APPROVED && 
-              'Your STEM OPT extension is approved! You have 24 additional months to work.'
-            }
-            {profile.currentStatus === ImmigrationStatus.H1B_PENDING && 
-              'Your H-1B petition is being processed. Continue working on your current status.'
-            }
-            {profile.currentStatus === ImmigrationStatus.H1B_ACTIVE && 
-              'You are on H-1B status. You can work for your sponsoring employer.'
-            }
-          </Paragraph>
-        </Card.Content>
-      </Card>
-
-      {/* Next Status Card */}
-      {nextStatus && (
+    <>
+      <ScrollView 
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Current Status Card */}
         <Card style={styles.card}>
           <Card.Content>
-            <Title>Next Step</Title>
-            <List.Item
-              title={`Transition to ${getStatusLabel(nextStatus)}`}
-              description="Recommended next immigration status"
-              left={props => <List.Icon {...props} icon="arrow-right-circle" color="#6750A4" />}
-              right={props => <List.Icon {...props} icon="chevron-right" />}
-            />
+            <View style={styles.statusHeader}>
+              <Text variant="titleLarge">{t('status.title')}</Text>
+              <Button
+                mode="text"
+                icon="pencil"
+                onPress={handleEditProfile}
+                compact
+              >
+                {t('common.update')}
+              </Button>
+            </View>
+            <Chip 
+              style={[styles.statusChip, { backgroundColor: ImmigrationColors.status.pending }]}
+              textStyle={{ color: lightTheme.colors.primary }}
+            >
+              {getStatusLabel(profile.currentStatus)}
+            </Chip>
+            <Text variant="bodyMedium" style={styles.description}>
+              {profile.currentStatus === ImmigrationStatus.F1_STUDENT && 
+                t('status.f1Description', { defaultValue: 'You are currently on F-1 student visa status.' })
+              }
+              {profile.currentStatus === ImmigrationStatus.OPT_PENDING && 
+                t('status.optPendingDescription', { defaultValue: 'Your OPT application is being processed.' })
+              }
+              {profile.currentStatus === ImmigrationStatus.OPT_APPROVED && 
+                t('status.optApprovedDescription', { defaultValue: 'Your OPT is approved!' })
+              }
+            </Text>
           </Card.Content>
         </Card>
-      )}
 
-      {/* Upcoming Deadlines Card */}
-      {deadlines.length > 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <Title>Upcoming Deadlines</Title>
-            {deadlines.map((deadline, index) => {
-              const daysUntil = getDaysUntil(deadline.dueDate);
-              const priorityColor = getDeadlinePriorityColor(deadline.priority);
-              
-              return (
+        {/* Next Status Card */}
+        {nextStatus && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text variant="titleLarge">{t('status.nextStep')}</Text>
+              <List.Item
+                title={`${t('status.transitionTo')} ${getStatusLabel(nextStatus)}`}
+                description={t('status.recommendedNextStatus')}
+                left={props => <List.Icon {...props} icon="arrow-right-circle" color={lightTheme.colors.primary} />}
+                right={props => <List.Icon {...props} icon="chevron-right" />}
+              />
+            </Card.Content>
+          </Card>
+        )}
+
+        {/* Upcoming Deadlines Card */}
+        {deadlines.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text variant="titleLarge">{t('status.upcomingDeadlines')}</Text>
+              {deadlines.map((deadline, index) => {
+                const daysUntil = getDaysUntil(deadline.dueDate);
+                const priorityColor = getDeadlinePriorityColor(deadline.priority);
+                
+                return (
+                  <List.Item
+                    key={index}
+                    title={deadline.title}
+                    description={`${formatDisplayDate(deadline.dueDate)} • ${daysUntil} ${daysUntil === 1 ? t('status.day') : t('status.days')}`}
+                    left={props => (
+                      <List.Icon 
+                        {...props} 
+                        icon="calendar-alert"
+                        color={priorityColor}
+                      />
+                    )}
+                    right={() => (
+                      <Chip 
+                        style={{ backgroundColor: priorityColor + '20' }}
+                        textStyle={{ color: priorityColor, fontSize: 10 }}
+                      >
+                        {deadline.priority}
+                      </Chip>
+                    )}
+                    style={styles.listItem}
+                  />
+                );
+              })}
+            </Card.Content>
+          </Card>
+        )}
+
+        {/* Required Actions Card */}
+        {actionItems.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text variant="titleLarge">{t('todo.currentFocus')}</Text>
+              {actionItems.map((action, index) => (
                 <List.Item
                   key={index}
-                  title={deadline.title}
-                  description={`${formatDate(deadline.dueDate)} • ${daysUntil} days`}
+                  title={action.title}
+                  description={action.description}
                   left={props => (
                     <List.Icon 
                       {...props} 
-                      icon={getDeadlineIcon(deadline.type)}
-                      color={priorityColor}
+                      icon="check-circle"
+                      color={lightTheme.colors.primary}
                     />
                   )}
-                  right={() => (
-                    <Chip 
-                      style={{ backgroundColor: priorityColor + '20' }}
-                      textStyle={{ color: priorityColor, fontSize: 10 }}
-                    >
-                      {deadline.priority}
-                    </Chip>
-                  )}
+                  right={props => <List.Icon {...props} icon="chevron-right" />}
                   style={styles.listItem}
                 />
-              );
-            })}
-          </Card.Content>
-        </Card>
-      )}
+              ))}
+            </Card.Content>
+          </Card>
+        )}
+      </ScrollView>
 
-      {/* Required Actions Card */}
-      {actionItems.length > 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <Title>Required Actions</Title>
-            {actionItems.map((action, index) => (
-              <List.Item
-                key={index}
-                title={action.title}
-                description={action.description}
-                left={props => (
-                  <List.Icon 
-                    {...props} 
-                    icon={getActionIcon(action.category)}
-                    color="#6750A4"
-                  />
-                )}
-                right={props => <List.Icon {...props} icon="chevron-right" />}
-                style={styles.listItem}
+      {/* Edit Profile Modal */}
+      <Portal>
+        <Modal
+          visible={editModalVisible}
+          onDismiss={() => setEditModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <Card style={styles.modalCard}>
+            <Card.Content>
+              <Text variant="titleLarge" style={styles.modalTitle}>
+                {t('status.updateProfile')}
+              </Text>
+              <StatusSelector
+                value={selectedStatus}
+                statuses={getAllStatuses()}
+                onChange={handleStatusSelect}
               />
-            ))}
-          </Card.Content>
-        </Card>
-      )}
+              <Divider style={styles.divider} />
+              <SmartProfileForm
+                key={selectedStatus}
+                status={selectedStatus}
+                values={formValues}
+                onChange={handleFieldChange}
+                errors={formErrors}
+              />
+              <Button
+                mode="contained"
+                onPress={handleSaveProfile}
+                loading={saving}
+                disabled={saving}
+                style={styles.saveButton}
+              >
+                {t('profile.updateProfile')}
+              </Button>
+            </Card.Content>
+          </Card>
+        </Modal>
+      </Portal>
 
-      {/* Empty State */}
-      {deadlines.length === 0 && actionItems.length === 0 && (
-        <Card style={styles.card}>
-          <Card.Content>
-            <Paragraph style={styles.emptyState}>
-              No upcoming deadlines or actions. Check back later or update your profile.
-            </Paragraph>
-          </Card.Content>
-        </Card>
-      )}
-    </ScrollView>
+      {/* Success Snackbar */}
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+        action={{
+          label: t('common.ok'),
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        {snackbarMessage}
+      </Snackbar>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  container: ContainerStyles.screen,
+  centerContainer: ContainerStyles.centered,
+  card: CardStyles.card,
+  statusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-  },
-  card: {
-    margin: 16,
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   statusChip: {
     alignSelf: 'flex-start',
-    marginVertical: 8,
+    marginVertical: Spacing.sm,
   },
   description: {
-    marginTop: 8,
-    color: '#666',
-    lineHeight: 20,
+    marginTop: Spacing.sm,
+    color: Colors.textSecondary,
+    lineHeight: FontSizes.xl,
   },
   listItem: {
-    paddingVertical: 4,
+    paddingVertical: Spacing.xs,
   },
-  loadingText: {
-    marginTop: 16,
-    color: '#666',
-  },
-  errorText: {
-    color: '#D32F2F',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
+  loadingText: TextStyles.loadingText,
+  errorText: TextStyles.errorText,
   retryButton: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   onboardingText: {
-    textAlign: 'center',
-    marginVertical: 16,
-    color: '#666',
+    ...TextStyles.centeredText,
+    marginVertical: Spacing.md,
+    color: Colors.textSecondary,
   },
   setupButton: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
-  emptyState: {
+  modalContainer: {
+    padding: Spacing.md,
+  },
+  modalCard: {
+    borderRadius: 16,
+  },
+  modalTitle: {
+    marginBottom: Spacing.md,
     textAlign: 'center',
-    color: '#999',
-    fontStyle: 'italic',
+  },
+  divider: {
+    marginVertical: Spacing.md,
+  },
+  saveButton: {
+    marginTop: Spacing.lg,
   },
 });
-
-
-
-

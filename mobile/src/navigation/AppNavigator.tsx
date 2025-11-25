@@ -7,6 +7,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
+import { useTranslation } from '../i18n';
 
 // Import screens
 import StatusScreen from '../screens/StatusScreen';
@@ -25,6 +26,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function AppNavigator() {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Tab.Navigator
@@ -47,8 +49,8 @@ export default function AppNavigator() {
         name="Status"
         component={StatusScreen}
         options={{
-          title: 'Immigration Status',
-          tabBarLabel: 'Status',
+          title: t('navigation.statusTitle'),
+          tabBarLabel: t('navigation.status'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account-check" size={size} color={color} />
           ),
@@ -59,8 +61,8 @@ export default function AppNavigator() {
         name="Timeline"
         component={TimelineScreen}
         options={{
-          title: 'Timeline',
-          tabBarLabel: 'Timeline',
+          title: t('navigation.timelineTitle'),
+          tabBarLabel: t('navigation.timeline'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="timeline-clock" size={size} color={color} />
           ),
@@ -71,8 +73,8 @@ export default function AppNavigator() {
         name="ToDo"
         component={ToDoScreen}
         options={{
-          title: 'To-Do List',
-          tabBarLabel: 'To Do',
+          title: t('navigation.todoTitle'),
+          tabBarLabel: t('navigation.todo'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="clipboard-check-outline" size={size} color={color} />
           ),
@@ -83,8 +85,8 @@ export default function AppNavigator() {
         name="Settings"
         component={SettingsScreen}
         options={{
-          title: 'Settings',
-          tabBarLabel: 'Settings',
+          title: t('navigation.settingsTitle'),
+          tabBarLabel: t('navigation.settings'),
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" size={size} color={color} />
           ),

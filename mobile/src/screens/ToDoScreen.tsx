@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Card, List, Chip, useTheme, ActivityIndicator, Button, Title, Paragraph } from 'react-native-paper';
+import { Text, Card, List, Chip, useTheme, ActivityIndicator, Button } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserProfile } from '../models/UserProfile';
 import { ActionItem, Deadline } from '../models/Timeline';
@@ -13,9 +13,12 @@ import { UserProfileStorage } from '../storage/UserProfileStorage';
 import { TimelineService } from '../services/TimelineService';
 import { StatusService } from '../services/StatusService';
 import { getStatusLabel, ImmigrationStatus } from '../models/ImmigrationStatus';
-import { formatDate, getDaysUntil } from '../utils/dateCalculations';
+import { formatDisplayDate, getDaysUntil } from '../utils/dateCalculations';
+import { Spacing, Colors, FontSizes, ContainerStyles, CardStyles, TextStyles, ImmigrationColors } from '../theme';
+import { useTranslation } from '../i18n';
 
 export default function ToDoScreen() {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentActions, setCurrentActions] = useState<ActionItem[]>([]);
@@ -79,13 +82,13 @@ export default function ToDoScreen() {
       setUrgentDeadlines(urgent);
 
       // Get recommended next status
-      const recommended = StatusService.getRecommendedNextStatus(userProfile);
+      const recommended = StatusService.getRecommendedNextStatus(userProfile.currentStatus);
       setNextStatus(recommended);
 
       setLoading(false);
     } catch (err) {
       console.error('Error loading to-do data:', err);
-      setError('Failed to load to-do information');
+      setError(t('common.error'));
       setLoading(false);
     }
   };
@@ -150,7 +153,9 @@ export default function ToDoScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" />
-        <Paragraph style={styles.loadingText}>Loading your to-do list...</Paragraph>
+        <Text variant="bodyMedium" style={styles.loadingText}>
+          {t('todo.loading')}
+        </Text>
       </View>
     );
   }
@@ -160,7 +165,7 @@ export default function ToDoScreen() {
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
         <Button mode="contained" onPress={loadData} style={styles.retryButton}>
-          Retry
+          {t('common.retry')}
         </Button>
       </View>
     );
@@ -169,16 +174,16 @@ export default function ToDoScreen() {
   if (!profile) {
     return (
       <View style={styles.centerContainer}>
-        <Title>Welcome!</Title>
-        <Paragraph style={styles.onboardingText}>
-          Set up your profile to get a personalized to-do list.
-        </Paragraph>
+        <Text variant="titleLarge">{t('todo.noProfile')}</Text>
+        <Text variant="bodyMedium" style={styles.onboardingText}>
+          {t('todo.noProfileDescription')}
+        </Text>
         <Button 
           mode="contained" 
           onPress={() => {/* TODO: Navigate to profile setup */}}
           style={styles.setupButton}
         >
-          Set Up Profile
+          {t('status.setUpProfile')}
         </Button>
       </View>
     );
@@ -198,14 +203,14 @@ export default function ToDoScreen() {
             <Card.Content>
               <View style={styles.nextStatusHeader}>
                 <Text variant="titleMedium" style={styles.nextStatusTitle}>
-                  📍 Next Milestone
+                  📍 {t('todo.nextMilestone')}
                 </Text>
                 <Chip mode="outlined" compact>
                   {getStatusLabel(nextStatus)}
                 </Chip>
               </View>
               <Text variant="bodyMedium" style={styles.nextStatusDescription}>
-                Work on the actions below to prepare for your transition.
+                {t('todo.workOnActions')}
               </Text>
             </Card.Content>
           </Card>
@@ -216,10 +221,10 @@ export default function ToDoScreen() {
           <Card style={[styles.card, styles.urgentCard]}>
             <Card.Content>
               <Text variant="titleLarge" style={styles.sectionTitle}>
-                ⚠️ Urgent Deadlines
+                ⚠️ {t('todo.urgentDeadlines')}
               </Text>
               <Text variant="bodyMedium" style={styles.subtitle}>
-                Action required within 2 weeks
+                {t('todo.actionRequired')}
               </Text>
 
               {urgentDeadlines.map((deadline, index) => {
@@ -228,7 +233,7 @@ export default function ToDoScreen() {
                   <List.Item
                     key={index}
                     title={deadline.title}
-                    description={`${formatDate(deadline.dueDate)} • ${daysUntil} days left`}
+                    description={`${formatDisplayDate(deadline.dueDate)} • ${daysUntil} ${t('todo.daysLeft')}`}
                     left={(props) => (
                       <List.Icon {...props} icon="alert-circle" color={theme.colors.error} />
                     )}
@@ -254,16 +259,16 @@ export default function ToDoScreen() {
           <Card style={styles.card}>
             <Card.Content>
               <Text variant="titleLarge" style={styles.sectionTitle}>
-                Current Focus
+                {t('todo.currentFocus')}
               </Text>
               <Text variant="bodyMedium" style={styles.subtitle}>
-                Actions you need to take now
+                {t('todo.currentFocusDescription')}
               </Text>
 
               {currentActions.map((action, index) => {
                 const dueText = action.dueDate 
-                  ? `Due ${formatDate(action.dueDate)} • ${getDaysUntil(action.dueDate)} days`
-                  : 'No deadline';
+                  ? `${t('todo.due')} ${formatDisplayDate(action.dueDate)} • ${getDaysUntil(action.dueDate)} ${t('status.days')}`
+                  : t('todo.noDeadline');
                 
                 return (
                   <List.Item
@@ -300,15 +305,15 @@ export default function ToDoScreen() {
           <Card style={styles.card}>
             <Card.Content>
               <Text variant="titleLarge" style={styles.sectionTitle}>
-                Get Ready For
+                {t('todo.getReadyFor')}
               </Text>
               <Text variant="bodyMedium" style={styles.subtitle}>
-                Upcoming actions in the next 30-90 days
+                {t('todo.getReadyForDescription')}
               </Text>
 
               {upcomingActions.map((action, index) => {
                 const dueText = action.dueDate 
-                  ? `Due ${formatDate(action.dueDate)} • ${getDaysUntil(action.dueDate)} days`
+                  ? `${t('todo.due')} ${formatDisplayDate(action.dueDate)} • ${getDaysUntil(action.dueDate)} ${t('status.days')}`
                   : '';
                 
                 return (
@@ -333,11 +338,11 @@ export default function ToDoScreen() {
             <Card.Content>
               <View style={styles.emptyStateContainer}>
                 <Text variant="headlineSmall" style={styles.emptyStateTitle}>
-                  🎉 All Caught Up!
+                  🎉 {t('todo.allCaughtUp')}
                 </Text>
-                <Paragraph style={styles.emptyStateText}>
-                  You have no pending action items. Check back later or update your profile if your status changes.
-                </Paragraph>
+                <Text variant="bodyMedium" style={styles.emptyStateText}>
+                  {t('todo.allCaughtUpDescription')}
+                </Text>
               </View>
             </Card.Content>
           </Card>
@@ -348,26 +353,56 @@ export default function ToDoScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    padding: 16,
-  },
+  container: ContainerStyles.screen,
+  centerContainer: ContainerStyles.centered,
+  content: ContainerStyles.content,
   card: {
-    marginBottom: 16,
+    marginBottom: Spacing.md,
   },
-  sectionTitle: {
-    fontWeight: 'bold',
-    marginBottom: 4,
+  loadingText: TextStyles.loadingText,
+  errorText: TextStyles.errorText,
+  retryButton: {
+    marginTop: Spacing.sm,
   },
-  subtitle: {
-    opacity: 0.7,
-    marginBottom: 16,
+  onboardingText: {
+    ...TextStyles.centeredText,
+    marginVertical: Spacing.md,
+    color: Colors.textSecondary,
   },
+  setupButton: {
+    marginTop: Spacing.sm,
+  },
+  nextStatusCard: {
+    borderColor: ImmigrationColors.status.pending, // Using theme color
+  },
+  nextStatusHeader: {
+    ...ContainerStyles.rowBetween,
+    marginBottom: Spacing.sm,
+  },
+  nextStatusTitle: {
+    fontWeight: '600',
+  },
+  nextStatusDescription: {
+    color: Colors.textPrimary,
+  },
+  urgentCard: {
+    borderColor: ImmigrationColors.priority.HIGH,
+  },
+  sectionTitle: TextStyles.sectionTitle,
+  subtitle: TextStyles.subtitle,
   listItem: {
     paddingHorizontal: 0,
+  },
+  emptyStateContainer: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+  },
+  emptyStateTitle: {
+    marginBottom: Spacing.sm,
+  },
+  emptyStateText: {
+    color: Colors.textSecondary,
+    textAlign: 'center',
   },
 });
 

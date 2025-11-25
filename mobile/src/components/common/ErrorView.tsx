@@ -4,8 +4,9 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
+import { ContainerStyles, TextStyles, ButtonStyles } from '../../theme/sharedStyles';
 
 export interface ErrorViewProps {
   /** Error message to display */
@@ -33,13 +34,13 @@ export function ErrorView({
   retryText = 'Retry' 
 }: ErrorViewProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.errorText}>{message}</Text>
+    <View style={ContainerStyles.centered}>
+      <Text style={TextStyles.errorText}>{message}</Text>
       {onRetry && (
         <Button 
           mode="contained" 
           onPress={onRetry} 
-          style={styles.retryButton}
+          style={ButtonStyles.retryButton}
         >
           {retryText}
         </Button>
@@ -47,23 +48,4 @@ export function ErrorView({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-  },
-  errorText: {
-    color: '#D32F2F',
-    marginBottom: 16,
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  retryButton: {
-    marginTop: 8,
-  },
-});
 

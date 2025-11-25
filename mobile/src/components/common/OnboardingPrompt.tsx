@@ -4,8 +4,10 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Title, Paragraph, Button } from 'react-native-paper';
+import { View } from 'react-native';
+import { Text, Button } from 'react-native-paper';
+import { ContainerStyles, TextStyles, ButtonStyles, Spacing } from '../../theme/sharedStyles';
+import { createStyles } from '../../theme/sharedStyles';
 
 export interface OnboardingPromptProps {
   /** Title of the onboarding prompt */
@@ -14,8 +16,10 @@ export interface OnboardingPromptProps {
   message?: string;
   /** Button text */
   buttonText?: string;
-  /** Callback when button is pressed */
+  /** Callback when button is pressed (for custom navigation) */
   onSetup?: () => void;
+  /** Auto-navigate to Settings tab if no callback provided */
+  autoNavigateToSettings?: boolean;
 }
 
 /**
@@ -37,14 +41,16 @@ export function OnboardingPrompt({
   onSetup
 }: OnboardingPromptProps) {
   return (
-    <View style={styles.container}>
-      <Title style={styles.title}>{title}</Title>
-      <Paragraph style={styles.message}>{message}</Paragraph>
+    <View style={ContainerStyles.centered}>
+      <Text variant="titleLarge" style={styles.title}>{title}</Text>
+      <Text variant="bodyMedium" style={[TextStyles.centeredText, TextStyles.mutedText, styles.message]}>
+        {message}
+      </Text>
       {onSetup && (
         <Button 
           mode="contained" 
           onPress={onSetup} 
-          style={styles.button}
+          style={ButtonStyles.button}
         >
           {buttonText}
         </Button>
@@ -53,25 +59,13 @@ export function OnboardingPrompt({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-  },
+const styles = createStyles({
   title: {
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   message: {
-    textAlign: 'center',
-    marginVertical: 16,
-    color: '#666',
-  },
-  button: {
-    marginTop: 8,
+    marginVertical: Spacing.md,
   },
 });
 

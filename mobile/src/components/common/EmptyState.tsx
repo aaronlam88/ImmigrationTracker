@@ -4,8 +4,10 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Card, Paragraph } from 'react-native-paper';
+import { View } from 'react-native';
+import { Card, Text } from 'react-native-paper';
+import { CardStyles, TextStyles, IconStyles, Spacing } from '../../theme/sharedStyles';
+import { createStyles } from '../../theme/sharedStyles';
 
 export interface EmptyStateProps {
   /** Message to display */
@@ -27,33 +29,27 @@ export interface EmptyStateProps {
  */
 export function EmptyState({ message, icon }: EmptyStateProps) {
   return (
-    <Card style={styles.card}>
+    <Card style={CardStyles.card}>
       <Card.Content>
         <View style={styles.container}>
-          {icon && <Paragraph style={styles.icon}>{icon}</Paragraph>}
-          <Paragraph style={styles.message}>{message}</Paragraph>
+          {icon && (
+            <Text style={IconStyles.iconLarge} variant="displaySmall">
+              {icon}
+            </Text>
+          )}
+          <Text variant="bodyMedium" style={TextStyles.emptyText}>
+            {message}
+          </Text>
         </View>
       </Card.Content>
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    margin: 16,
-  },
+const styles = createStyles({
   container: {
     alignItems: 'center',
-    paddingVertical: 16,
-  },
-  icon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  message: {
-    textAlign: 'center',
-    color: '#999',
-    fontStyle: 'italic',
+    paddingVertical: Spacing.md,
   },
 });
 

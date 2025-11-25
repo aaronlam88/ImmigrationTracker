@@ -5,16 +5,19 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { Card, Title, Paragraph, List, ProgressBar, Text, Button, ActivityIndicator, SegmentedButtons, Chip } from 'react-native-paper';
+import { Card, List, ProgressBar, Text, Button, ActivityIndicator, SegmentedButtons, Chip } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserProfile } from '../models/UserProfile';
 import { TimelineEvent } from '../models/Timeline';
 import { UserProfileStorage } from '../storage/UserProfileStorage';
 import { TimelineService } from '../services/TimelineService';
 import { getStatusLabel, ImmigrationPhase } from '../models/ImmigrationStatus';
-import { formatDate, getDaysUntil, isAfter } from '../utils/dateCalculations';
+import { formatDisplayDate, getDaysUntil, isAfterDate } from '../utils/dateCalculations';
+import { Spacing, Colors, FontSizes, BorderRadius, ContainerStyles, CardStyles, TextStyles } from '../theme';
+import { useTranslation } from '../i18n';
 
 export default function TimelineScreen() {
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [allEvents, setAllEvents] = useState<TimelineEvent[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<TimelineEvent[]>([]);
@@ -53,14 +56,14 @@ export default function TimelineScreen() {
 
       // Calculate progress (percentage of past events)
       const now = new Date();
-      const pastEvents = sortedEvents.filter(e => !isAfter(e.date, now)).length;
+      const pastEvents = sortedEvents.filter(e => !isAfterDate(e.date, now)).length;
       const totalEvents = sortedEvents.length || 1;
       setProgress(pastEvents / totalEvents);
 
       setLoading(false);
     } catch (err) {
       console.error('Error loading timeline data:', err);
-      setError('Failed to load timeline information');
+      setError(t('common.error'));
       setLoading(false);
     }
   };
@@ -110,7 +113,7 @@ export default function TimelineScreen() {
     const eventDate = new Date(event.date);
     
     // Past events - gray
-    if (!isAfter(event.date, now)) {
+    if (!isAfterDate(event.date, now)) {
       return '#9E9E9E';
     }
     
@@ -158,7 +161,9 @@ export default function TimelineScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" />
-        <Paragraph style={styles.loadingText}>Loading your timeline...</Paragraph>
+        <Text variant="bodyMedium" style={styles.loadingText}>
+          {t('common.loading')}
+        </Text>
       </View>
     );
   }
@@ -168,7 +173,7 @@ export default function TimelineScreen() {
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
         <Button mode="contained" onPress={loadData} style={styles.retryButton}>
-          Retry
+          {t('common.retry')}
         </Button>
       </View>
     );
@@ -177,16 +182,16 @@ export default function TimelineScreen() {
   if (!profile) {
     return (
       <View style={styles.centerContainer}>
-        <Title>No Timeline Yet</Title>
-        <Paragraph style={styles.onboardingText}>
-          Set up your profile to see your immigration timeline.
-        </Paragraph>
+        <Text variant="titleLarge">{t('timeline.noTimeline')}</Text>
+        <Text variant="bodyMedium" style={styles.onboardingText}>
+          {t('timeline.noTimelineDescription')}
+        </Text>
         <Button 
           mode="contained" 
           onPress={() => {/* TODO: Navigate to profile setup */}}
           style={styles.setupButton}
         >
-          Set Up Profile
+          {t('status.setUpProfile')}
         </Button>
       </View>
     );
@@ -205,16 +210,16 @@ export default function TimelineScreen() {
       {/* Progress Card */}
       <Card style={styles.card}>
         <Card.Content>
-          <Title>Immigration Journey Progress</Title>
+          <Text variant="titleLarge">{t('timeline.progress')}</Text>
           <ProgressBar 
             progress={progress} 
             color="#6750A4" 
             style={styles.progressBar} 
           />
           <Text style={styles.progressText}>{progressPercent}% Complete</Text>
-          <Paragraph style={styles.progressDescription}>
+          <Text variant="bodyMedium" style={styles.progressDescription}>
             You've completed {Math.round(progress * allEvents.length)} of {allEvents.length} milestones
-          </Paragraph>
+          </Text>
         </Card.Content>
       </Card>
 
@@ -224,10 +229,10 @@ export default function TimelineScreen() {
           value={phaseFilter}
           onValueChange={setPhaseFilter}
           buttons={[
-            { value: 'ALL', label: 'All' },
-            { value: ImmigrationPhase.STUDENT, label: 'F-1' },
-            { value: ImmigrationPhase.OPT, label: 'OPT' },
-            { value: ImmigrationPhase.H1B, label: 'H-1B' },
+            { value: 'ALL', label: t('timeline.all') },
+            { value: ImmigrationPhase.STUDENT, label: t('timeline.f1') },
+            { value: ImmigrationPhase.OPT, label: t('timeline.opt') },
+            { value: ImmigrationPhase.H1B, label: t('timeline.h1b') },
           ]}
           style={styles.segmentedButtons}
         />
@@ -238,10 +243,10 @@ export default function TimelineScreen() {
         Object.entries(eventGroups).map(([phase, events]) => (
           <Card key={phase} style={styles.card}>
             <Card.Content>
-              <Title>{getPhaseLabel(phase)}</Title>
+              <Text variant="titleMedium" style={styles.sectionTitle}>{getPhaseLabel(phase)}</Text>
               <List.Section>
                 {events.map((event, index) => {
-                  const isPast = !isAfter(event.date, new Date());
+                  const isPast = !isAfterDate(event.date, new Date());
                   const eventColor = getEventColor(event);
                   const daysUntil = isPast ? null : getDaysUntil(event.date);
                   
@@ -251,8 +256,8 @@ export default function TimelineScreen() {
                       title={event.title}
                       description={
                         isPast 
-                          ? `Completed on ${formatDate(event.date)}`
-                          : `${formatDate(event.date)}${daysUntil !== null ? ` • ${daysUntil} days` : ''}`
+                          ? `Completed on ${formatDisplayDate(event.date)}`
+                          : `${formatDisplayDate(event.date)}${daysUntil !== null ? ` • ${daysUntil} days` : ''}`
                       }
                       left={props => (
                         <List.Icon 
@@ -289,9 +294,9 @@ export default function TimelineScreen() {
       ) : (
         <Card style={styles.card}>
           <Card.Content>
-            <Paragraph style={styles.emptyState}>
-              No events found for the selected filter.
-            </Paragraph>
+            <Text variant="bodyMedium" style={styles.emptyState}>
+              {t('timeline.noEvents')}
+            </Text>
           </Card.Content>
         </Card>
       )}
@@ -300,81 +305,63 @@ export default function TimelineScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-  },
-  card: {
-    margin: 16,
-    marginBottom: 8,
-  },
+  container: ContainerStyles.screen,
+  centerContainer: ContainerStyles.centered,
+  card: CardStyles.card,
   progressBar: {
-    marginTop: 16,
-    height: 8,
-    borderRadius: 4,
+    marginTop: Spacing.md,
+    height: Spacing.sm,
+    borderRadius: BorderRadius.sm,
   },
   progressText: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
     textAlign: 'center',
-    color: '#666',
+    color: Colors.textSecondary,
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: FontSizes.base,
   },
   progressDescription: {
-    marginTop: 4,
+    marginTop: Spacing.xs,
     textAlign: 'center',
-    color: '#999',
-    fontSize: 12,
+    color: Colors.textTertiary,
+    fontSize: FontSizes.sm,
+  },
+  sectionTitle: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xs,
+    fontWeight: '600',
   },
   filterContainer: {
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   segmentedButtons: {
-    backgroundColor: 'white',
+    backgroundColor: Colors.surface,
   },
   listItem: {
-    paddingVertical: 4,
+    paddingVertical: Spacing.xs,
   },
   pastEvent: {
     opacity: 0.6,
   },
   pastEventText: {
     textDecorationLine: 'line-through',
-    color: '#999',
+    color: Colors.textTertiary,
   },
-  loadingText: {
-    marginTop: 16,
-    color: '#666',
-  },
-  errorText: {
-    color: '#D32F2F',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
+  loadingText: TextStyles.loadingText,
+  errorText: TextStyles.errorText,
   retryButton: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
   onboardingText: {
-    textAlign: 'center',
-    marginVertical: 16,
-    color: '#666',
+    ...TextStyles.centeredText,
+    marginVertical: Spacing.md,
+    color: Colors.textSecondary,
   },
   setupButton: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
-  emptyState: {
-    textAlign: 'center',
-    color: '#999',
-    fontStyle: 'italic',
-  },
+  emptyState: TextStyles.emptyText,
 });
 
 
